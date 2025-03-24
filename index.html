@@ -4,21 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Birthday AR</title>
-    <!-- Import latest versions of libraries -->
-    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@2.4.0/aframe/build/aframe-ar-nft.js"></script>
+    <!-- Import the very latest versions of libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/aframe@1.4.2/dist/aframe-master.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ar.js@2.4.2/aframe/build/aframe-ar.min.js"></script>
     <style>
         body {
             margin: 0;
             overflow: hidden;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        a-scene {
-            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
@@ -58,23 +51,32 @@
         Point camera at the HIRO marker on the photo frame
     </div>
     
-    <div id="debug-info">Initializing camera...</div>
+    <div id="debug-info">Loading libraries...</div>
 
     <a-scene
         embedded
-        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; patternRatio: 0.8;"
-        renderer="logarithmicDepthBuffer: true; precision: medium; alpha: true;"
+        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; cameraParametersUrl: https://cdn.jsdelivr.net/npm/ar.js@2.4.2/data/camera_para.dat;"
+        renderer="logarithmicDepthBuffer: true; precision: medium; alpha: true; antialias: true;"
         vr-mode-ui="enabled: false">
         
-        <!-- Define the marker -->
-        <a-marker preset="hiro" size="0.15" type="pattern" url="patt.hiro" smooth="true" smoothCount="5" id="hiro-marker">
+        <!-- Define the marker with latest pattern URL and optimized parameters -->
+        <a-marker 
+            preset="hiro" 
+            raycaster="objects: .clickable"
+            emitevents="true"
+            cursor="fuse: false; rayOrigin: mouse;"
+            smooth="true" 
+            smoothCount="10"
+            smoothTolerance="0.01"
+            smoothThreshold="5"
+            id="hiro-marker">
             
-            <!-- Proposal message -->
+            <!-- Proposal message that will replace the Happy Birthday text -->
             <a-entity
                 id="proposal-message"
                 position="0 0.2 0"
                 scale="1.5 1.5 1.5"
-                text="value: Will you marry me?; color: #ff0066; width: 3; align: center; wrapCount: 10; font: https://cdn.aframe.io/fonts/Exo2Bold.fnt;"
+                text="value: Will you marry me?; color: #ff0066; width: 3; align: center; wrapCount: 10; zOffset: 0.01;"
                 rotation="-90 0 0">
             </a-entity>
             
@@ -82,8 +84,36 @@
             <a-entity
                 position="0 0.3 0"
                 geometry="primitive: sphere; radius: 0.1;"
-                material="color: #ff0066;"
+                material="color: #ff0066; shader: flat;"
                 animation="property: position; to: 0 0.5 0; dir: alternate; dur: 1000; easing: easeInOutQuad; loop: true">
+            </a-entity>
+            
+            <!-- Add some animated particles -->
+            <a-entity
+                position="0 0.3 0"
+                scale="0.5 0.5 0.5"
+                animation="property: rotation; to: 0 360 0; loop: true; dur: 10000; easing: linear;">
+                
+                <!-- First set of particles -->
+                <a-entity
+                    position="-0.5 0 0"
+                    animation="property: position; to: 0.5 0 0; dir: alternate; dur: 1500; easing: easeInOutQuad; loop: true;">
+                    <a-sphere radius="0.05" color="#ff3399" opacity="0.7"></a-sphere>
+                </a-entity>
+                
+                <!-- Second set of particles -->
+                <a-entity
+                    position="0 0 -0.5"
+                    animation="property: position; to: 0 0 0.5; dir: alternate; dur: 1200; easing: easeInOutQuad; loop: true;">
+                    <a-sphere radius="0.05" color="#ff99cc" opacity="0.7"></a-sphere>
+                </a-entity>
+                
+                <!-- Third set of particles -->
+                <a-entity
+                    position="0.3 0.3 0"
+                    animation="property: position; to: -0.3 -0.3 0; dir: alternate; dur: 1800; easing: easeInOutQuad; loop: true;">
+                    <a-sphere radius="0.05" color="#ff6699" opacity="0.7"></a-sphere>
+                </a-entity>
             </a-entity>
         </a-marker>
         
@@ -91,22 +121,51 @@
     </a-scene>
 
     <script>
+        // Get debug element
         const debugInfo = document.getElementById('debug-info');
+        
+        // Update when libraries load
+        window.addEventListener('load', function() {
+            debugInfo.textContent = "Libraries loaded. Initializing camera...";
+            
+            // Delay to ensure camera has time to initialize
+            setTimeout(function() {
+                debugInfo.textContent = "Camera ready. Looking for HIRO marker...";
+            }, 3000);
+        });
+        
+        // Get marker element
         const marker = document.getElementById('hiro-marker');
-
-        document.addEventListener('DOMContentLoaded', function() {
-            debugInfo.textContent = "Camera ready. Looking for marker...";
-        });
-
+        
+        // Listen for marker found event
         marker.addEventListener('markerFound', function() {
-            debugInfo.textContent = "Marker found! Proposal message should be visible.";
-            console.log("Marker detected:", marker);
+            debugInfo.textContent = "✓ Marker found! Proposal message should be visible.";
+            console.log("Marker found!");
         });
-
+        
+        // Listen for marker lost event
         marker.addEventListener('markerLost', function() {
-            debugInfo.textContent = "Marker lost. Please point at the marker again.";
-            console.log("Marker lost:", marker);
+            debugInfo.textContent = "✗ Marker lost. Please point at the HIRO marker again.";
+            console.log("Marker lost!");
         });
+        
+        // Additional debugging info
+        document.querySelector('a-scene').addEventListener('loaded', function() {
+            console.log("A-Frame scene loaded");
+            debugInfo.textContent = "Scene loaded. Camera initializing...";
+        });
+        
+        // Check for AR support
+        if (navigator.xr) {
+            navigator.xr.isSessionSupported('immersive-ar')
+                .then((supported) => {
+                    if (supported) {
+                        console.log("WebXR AR is supported");
+                    } else {
+                        console.log("WebXR AR is not supported");
+                    }
+                });
+        }
     </script>
 </body>
 </html>
