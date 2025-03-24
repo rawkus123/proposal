@@ -4,10 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AR Proposal</title>
-    <!-- Import A-Frame and AR.js libraries -->
+    <!-- Import A-Frame and AR.js libraries from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.2/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ar.js/2.4.3/aframe-ar.min.js"></script>
     <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
         #message-container {
             position: absolute;
             top: 10px;
@@ -25,36 +29,79 @@
             border-radius: 5px;
             margin-bottom: 10px;
         }
+        .debug-info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 5px;
+            font-size: 12px;
+            z-index: 999;
+        }
     </style>
 </head>
-<body style="margin: 0; overflow: hidden;">
+<body>
     <div id="message-container">
         <div class="instructions">Point your camera at the HIRO marker to see your proposal message</div>
     </div>
     
+    <div class="debug-info" id="debug-info">Waiting for camera...</div>
+    
     <!-- A-Frame and AR.js scene -->
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;">
+    <a-scene 
+        embedded 
+        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;"
+        vr-mode-ui="enabled: false">
+        
         <!-- This is your 3D text that will appear above the marker -->
-        <a-marker preset="hiro">
+        <a-marker preset="hiro" smooth="true">
             <!-- Position the text above the marker -->
-            <a-entity
+            <a-text
+                value="Will you marry me?"
+                color="red"
+                width="5"
+                align="center"
                 position="0 0.5 0"
                 rotation="-90 0 0"
-                text="value: Will you marry me?; color: red; width: 5; align: center;"
-                animation="property: rotation; to: -90 360 0; loop: true; dur: 10000; easing: linear;"
-            ></a-entity>
+                animation="property: rotation; to: -90 360 0; loop: true; dur: 10000; easing: linear;">
+            </a-text>
             
-            <!-- Add a heart model -->
+            <!-- Add a heart shape -->
             <a-entity
                 position="0 0.75 0"
-                scale="0.5 0.5 0.5"
-                geometry="primitive: heart;"
+                geometry="primitive: sphere; radius: 0.2;"
                 material="color: red;"
-                animation="property: position; to: 0 1 0; dir: alternate; dur: 1000; easing: easeInOutQuad; loop: true"
-            ></a-entity>
+                animation="property: position; to: 0 1 0; dir: alternate; dur: 1000; easing: easeInOutQuad; loop: true">
+            </a-entity>
         </a-marker>
         
         <a-entity camera></a-entity>
     </a-scene>
+
+    <script>
+        // Debug info to help troubleshoot
+        const debugInfo = document.getElementById('debug-info');
+        
+        // Check if camera is available
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                debugInfo.textContent = "Camera access granted!";
+                stream.getTracks().forEach(track => track.stop());
+            })
+            .catch(function(err) {
+                debugInfo.textContent = "Camera error: " + err.message;
+            });
+            
+        // Update when AR.js is ready
+        document.querySelector('a-scene').addEventListener('loaded', function() {
+            debugInfo.textContent = "AR.js loaded, waiting for marker...";
+        });
+        
+        // Update when marker is found
+        document.querySelector('a-marker').addEventListener('markerFound', function() {
+            debugInfo.textContent = "Marker found! You should see the proposal now.";
+        });
+    </script>
 </body>
 </html>
