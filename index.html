@@ -5,13 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Birthday AR</title>
     <!-- Import latest versions of libraries -->
-    <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1.3.0/dist/aframe-master.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@2.4.0/aframe/build/aframe-ar-nft.js"></script>
     <style>
         body {
             margin: 0;
             overflow: hidden;
             position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        a-scene {
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
@@ -60,9 +67,9 @@
         vr-mode-ui="enabled: false">
         
         <!-- Define the marker -->
-        <a-marker preset="hiro" size="0.15" type="pattern" url="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/data/patt.hiro" smooth="true" smoothCount="5" id="hiro-marker">
+        <a-marker preset="hiro" size="0.15" type="pattern" url="patt.hiro" smooth="true" smoothCount="5" id="hiro-marker">
             
-            <!-- Proposal message that will replace the Happy Birthday text -->
+            <!-- Proposal message -->
             <a-entity
                 id="proposal-message"
                 position="0 0.2 0"
@@ -78,61 +85,27 @@
                 material="color: #ff0066;"
                 animation="property: position; to: 0 0.5 0; dir: alternate; dur: 1000; easing: easeInOutQuad; loop: true">
             </a-entity>
-            
-            <!-- Add some animated particles -->
-            <a-entity
-                position="0 0.3 0"
-                scale="0.5 0.5 0.5"
-                animation="property: rotation; to: 0 360 0; loop: true; dur: 10000; easing: linear;">
-                
-                <!-- First set of particles -->
-                <a-entity
-                    position="-0.5 0 0"
-                    animation="property: position; to: 0.5 0 0; dir: alternate; dur: 1500; easing: easeInOutQuad; loop: true;">
-                    <a-sphere radius="0.05" color="#ff3399" opacity="0.7"></a-sphere>
-                </a-entity>
-                
-                <!-- Second set of particles -->
-                <a-entity
-                    position="0 0 -0.5"
-                    animation="property: position; to: 0 0 0.5; dir: alternate; dur: 1200; easing: easeInOutQuad; loop: true;">
-                    <a-sphere radius="0.05" color="#ff99cc" opacity="0.7"></a-sphere>
-                </a-entity>
-                
-                <!-- Third set of particles -->
-                <a-entity
-                    position="0.3 0.3 0"
-                    animation="property: position; to: -0.3 -0.3 0; dir: alternate; dur: 1800; easing: easeInOutQuad; loop: true;">
-                    <a-sphere radius="0.05" color="#ff6699" opacity="0.7"></a-sphere>
-                </a-entity>
-            </a-entity>
         </a-marker>
         
         <a-entity camera></a-entity>
     </a-scene>
 
     <script>
-        // Get debug element
         const debugInfo = document.getElementById('debug-info');
-        
-        // Camera initialized event
+        const marker = document.getElementById('hiro-marker');
+
         document.addEventListener('DOMContentLoaded', function() {
             debugInfo.textContent = "Camera ready. Looking for marker...";
         });
-        
-        // Get marker element
-        const marker = document.getElementById('hiro-marker');
-        
-        // Listen for marker found event
+
         marker.addEventListener('markerFound', function() {
             debugInfo.textContent = "Marker found! Proposal message should be visible.";
-            console.log("Marker found!");
+            console.log("Marker detected:", marker);
         });
-        
-        // Listen for marker lost event
+
         marker.addEventListener('markerLost', function() {
             debugInfo.textContent = "Marker lost. Please point at the marker again.";
-            console.log("Marker lost!");
+            console.log("Marker lost:", marker);
         });
     </script>
 </body>
